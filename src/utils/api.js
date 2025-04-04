@@ -12,65 +12,22 @@ export const fetchDataFromApi = async (url) => {
     }
 }
 
-//for send data only text feilds
 // export const postData = async (url, formFields) => {
 //     try {
-//         const response = await fetch("http://localhost:4000" + url, {
-//             method: 'POST',
+//         const response = await axios.post(process.env.REACT_APP_BASE_URL + url, formFields, {
 //             headers: {
-//                 'Content-Type': 'application/json',
-//             },
-//             body: JSON.stringify(formFields), // Serialize the JSON object
+//                 'Authorization': `Bearer ${jwtToken}`,
+//             }
 //         });
 
-//         if (response.ok) {
-//             const data = await response.json();
-//             return data;
-//         } else {
-//             const errorData = await response.json();
-//             return errorData;
-//         }
+//         return response.data; // Axios already parses JSON for you
 //     } catch (error) {
-//         return { error: true, msg: "Network error or server not reachable" };
-//     }
-// };
-
-export const postData = async (url, formFields) => {
-    try {
-        const response = await axios.post(process.env.REACT_APP_BASE_URL + url, formFields, {
-            headers: {
-                'Authorization': `Bearer ${jwtToken}`,
-            }
-        });
-
-        return response.data; // Axios already parses JSON for you
-    } catch (error) {
-        // Check if the error has a response from the server
-        if (error.response) {
-            return error.response.data; // Return the error response from the server
-        } else {
-            return { error: true, msg: "Network error or server not reachable" };
-        }
-    }
-};
-
-//this is with images and data 
-// export const postData = async (url, formData) => {
-//     try {
-//         const response = await fetch("http://localhost:4000" + url, {
-//             method: 'POST',
-//             body: formData
-//         });
-
-//         if (response.ok) {
-//             const data = await response.json();
-//             return data;
+//         // Check if the error has a response from the server
+//         if (error.response) {
+//             return error.response.data; // Return the error response from the server
 //         } else {
-//             const errorData = await response.json();
-//             return errorData;
+//             return { error: true, msg: "Network error or server not reachable" };
 //         }
-//     } catch (error) {
-//         return { error: true, msg: "Network error or server not reachable" };
 //     }
 // };
 
@@ -106,6 +63,25 @@ export const deleteImages = async (url) => {
             return error.response.data; // Return the error response from the server
         } else {
             return { success: false, msg: "Network error or server not reachable" };
+        }
+    }
+};
+
+
+export const postData = async (url, formData) => {
+    try {
+        const response = await axios.post(process.env.REACT_APP_BASE_URL + url, formData, {
+            headers: {
+                'Authorization': `Bearer ${jwtToken}`,
+                'Content-Type': 'multipart/form-data',
+            }
+        });
+        return response.data;
+    } catch (error) {
+        if (error.response) {
+            return error.response.data;
+        } else {
+            return { error: true, msg: "Network error or server not reachable" };
         }
     }
 };

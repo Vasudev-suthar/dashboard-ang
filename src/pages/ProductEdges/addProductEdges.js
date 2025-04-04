@@ -172,47 +172,11 @@ const AddProductEdges = () => {
 
     // for upload imges in local folder with multer
    
-    const onchangeFile = async (e, apiEndPoint) => {
-        try {
-            const imgArr = [];
-            const files = e.target.files;
-
-            for (let i = 0; i < files.length; i++) {
-
-                if (files[i] && (files[i].type === 'image/jpeg' || files[i].type === 'image/jpg' || files[i].type === 'image/png')) {
-                    setimgFiles(files)
-
-                    const file = files[i]
-                    imgArr.push(file)
-                    formData.append('images', file)
-                } else {
-                    context.setAlertBox({
-                        open: true,
-                        error: true,
-                        msg: "Please select a valid JPG or PNG image file."
-                    })
-                }
-
-            }
-            setFiles(imgArr);
-            setIsSelectedFiles(true)
-            postData(apiEndPoint, formData).then((res) => {
-                setOriginalUrls(res);
-                context.setAlertBox({
-                    open: true,
-                    error: false,
-                    msg: "images uploaded!"
-                })
-            })
-        } catch (error) {
-            console.log(error)
-        }
-    }
-
+    
     const removeImg = async (index, imgUrl) => {
         try {
             const originalUrl = originalUrls[index];
-
+            
             // Call the API to delete the image
             deleteImages(`/api/productedge/deleteImage?img=${originalUrl}`).then((res) => {
                 if (res.success) {
@@ -245,37 +209,147 @@ const AddProductEdges = () => {
         }
     }
 
-    const addProductedge = (e) => {
-        e.preventDefault()
-
-        formData.append('edgeId', formFields.edgeId)
-        formData.append('productId', formFields.productId)
-
-
-        if (formFields.edgeId !== "" && formFields.productId !== "" && isSelectedFiles !== false) {
-            setIsLoading(true)
-
-            postData('/api/productedge/create', formFields).then(res => {
-                context.setAlertBox({
-                    open: true,
-                    msg: 'The productedge is created!',
-                    error: false
-                })
-                setIsLoading(false)
-                history('/productedge')
-            })
-        } else {
+    const onchangeFile = async (e) => {
+        try {
+            const imgArr = [];
+            const files = e.target.files;
+    
+            for (let i = 0; i < files.length; i++) {
+                if (files[i] && (files[i].type === 'image/jpeg' || files[i].type === 'image/jpg' || files[i].type === 'image/png')) {
+                    setimgFiles(files)
+                    imgArr.push(files[i]);
+                } else {
+                    context.setAlertBox({
+                        open: true,
+                        error: true,
+                        msg: "Please select a valid JPG or PNG image file."
+                    });
+                    return;
+                }
+            }
+            setFiles(imgArr);
+            setIsSelectedFiles(imgArr.length > 0);
+        } catch (error) {
+            console.log(error);
+        }
+    };
+    
+    const addProductedge = async (e) => {
+        e.preventDefault();
+        
+        if (formFields.edgeId === "" || formFields.productId === "" || !files.length) {
             context.setAlertBox({
                 open: true,
                 error: true,
-                msg: 'Please fill all the details'
-            })
-            return false;
+                msg: 'Please fill all the details and select at least one image'
+            });
+            return;
         }
-    }
+    
+        setIsLoading(true);
+        
+        try {
+            const formData = new FormData();
+            formData.append('productId', formFields.productId);
+            formData.append('edgeId', formFields.edgeId);
+            
+            // Append all images
+            files.forEach((file) => {
+                formData.append('images', file);
+            });
+            postData("/api/productedge/create-with-images", formData).then((res) => {
+                            if (res.error !== true) {
+                                context.setAlertBox({
+                                    open: true,
+                                    error: false,
+                                    msg: "he productedge is created!" 
+                                })
+                                    setIsLoading(false)
+                                    history("/productedge")
+                            } else {
+                                setIsLoading(false)
+                                context.setAlertBox({
+                                    open: true,
+                                    error: true,
+                                    msg: res.msg
+                                })
+                                history("/productedge")
+                            }
+                        })
+        } catch (error) {
+            setIsLoading(false);
+            console.error(error);
+        }
+    };
+
+    // const onchangeFile = async (e, apiEndPoint) => {
+    //     try {
+    //         const imgArr = [];
+    //         const files = e.target.files;
+
+    //         for (let i = 0; i < files.length; i++) {
+
+    //             if (files[i] && (files[i].type === 'image/jpeg' || files[i].type === 'image/jpg' || files[i].type === 'image/png')) {
+    //                 setimgFiles(files)
+
+    //                 const file = files[i]
+    //                 imgArr.push(file)
+    //                 formData.append('images', file)
+    //             } else {
+    //                 context.setAlertBox({
+    //                     open: true,
+    //                     error: true,
+    //                     msg: "Please select a valid JPG or PNG image file."
+    //                 })
+    //             }
+
+    //         }
+    //         setFiles(imgArr);
+    //         setIsSelectedFiles(true)
+    //         postData(apiEndPoint, formData).then((res) => {
+    //             setOriginalUrls(res);
+    //             context.setAlertBox({
+    //                 open: true,
+    //                 error: false,
+    //                 msg: "images uploaded!"
+    //             })
+    //         })
+    //     } catch (error) {
+    //         console.log(error)
+    //     }
+    // }
+
+    // const addProductedge = (e) => {
+    //     e.preventDefault()
+
+    //     formData.append('edgeId', formFields.edgeId)
+    //     formData.append('productId', formFields.productId)
 
 
+    //     if (formFields.edgeId !== "" && formFields.productId !== "" && isSelectedFiles !== false) {
+    //         setIsLoading(true)
 
+    //         postData('/api/productedge/create', formFields).then(res => {
+    //             context.setAlertBox({
+    //                 open: true,
+    //                 msg: 'The productedge is created!',
+    //                 error: false
+    //             })
+    //             setIsLoading(false)
+    //             history('/productedge')
+    //         })
+    //     } else {
+    //         context.setAlertBox({
+    //             open: true,
+    //             error: true,
+    //             msg: 'Please fill all the details'
+    //         })
+    //         return false;
+    //     }
+    // }
+
+
+    
     return (
         <>
             <div className="right-content w-100">
